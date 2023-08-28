@@ -1,7 +1,11 @@
 using System.Text.Json.Serialization;
 using ChatAPI.Configuration;
+using ChatAPI.Services.Messages;
+using Messaging.Services.Chat;
 using RabbitMQ.Client;
 using Serilog;
+
+namespace ChatAPI;
 
 public class Program
 {
@@ -94,6 +98,12 @@ public class Program
         // Swagger
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
+        
+        // Hosted services
+        builder.Services.AddHostedService<ChatSessionFeedbackConsumer>();
+
+        // Rest of the services
+        builder.Services.AddSingleton<IChatSessionPublisher, ChatSessionPublisher>();
     }
 
 

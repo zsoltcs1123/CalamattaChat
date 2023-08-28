@@ -3,6 +3,7 @@ using AgentChatCoordinatorService.Configuration;
 using AgentChatCoordinatorService.Models;
 using AgentChatCoordinatorService.Services.Chat;
 using Messaging.Models;
+using Messaging.Services.Chat;
 using Messaging.Services.RabbitMQ;
 using RabbitMQ.Client;
 using SharedModels.Entities;
@@ -16,16 +17,19 @@ public class ChatSessionConsumer : IHostedService, IDisposable
     private readonly RabbitMQConfig _rabbitMQConfig;
     private readonly RabbitMQConsumer _rabbitMQConsumer;
     private readonly IChatAssignmentService _chatAssignmentService;
+    private readonly IChatSessionPublisher _chatSessionPublisher;
 
     public ChatSessionConsumer(
         ILogger<ChatSessionConsumer> logger,
         IConnection rabbitMQConnection,
         RabbitMQConfig rabbitMQConfig,
-        IChatAssignmentService chatAssignmentService)
+        IChatAssignmentService chatAssignmentService,
+        IChatSessionPublisher chatSessionPublisher)
     {
         _logger = logger;
         _rabbitMQConfig = rabbitMQConfig;
         _chatAssignmentService = chatAssignmentService;
+        _chatSessionPublisher = chatSessionPublisher;
 
         _rabbitMQConsumer = new RabbitMQConsumer(rabbitMQConnection, _rabbitMQConfig.ChatSessionQueueName);
     }
@@ -67,15 +71,16 @@ public class ChatSessionConsumer : IHostedService, IDisposable
         if (!IsAssigned(chatSession, out var agent))
         {
             chatSession.Status = ChatSessionStatus.Refused;
+            _chatSessionPublisher.Publish(new ChatSessionMessage(chatSession), _rabbitMQConfig.ChatFeedbackQueueName);
 
             _logger.LogInformation("ChatSession {@ChatSession} refused", chatSession);
         }
         else
         {
-            chatSession.Status = ChatSessionStatus.Assigned;
-            //Todo send feedback message
-            //Todo publish on agent queue
-        }
+            _chatSessionPublisher.Publish(new ChatSessionMessage(chatSession), _rabbitMQConfig.ChatFeedbackQueueName);
+            //Todo: push to agent queue
+        }   
+        
     }
 
     private bool IsAssigned(ChatSession chatSession, out Agent? agent)

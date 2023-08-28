@@ -15,6 +15,7 @@ public class Program
 
         ConfigureServices(builder);
         ConfigureRabbitMQ(builder);
+        ConfigureCors(builder);
 
         var app = builder.Build();
 
@@ -51,6 +52,21 @@ public class Program
         };
         var connection = factory.CreateConnection();
         builder.Services.AddSingleton(connection);
+    }
+    
+    private static void ConfigureCors(WebApplicationBuilder builder)
+    {
+        //CORS enabled so the tester HTMLs can access the API
+        builder.Services.AddCors(options =>
+        {
+            options.AddDefaultPolicy(policyBuilder =>
+            {
+                policyBuilder.WithOrigins("null") // "null" is the origin for local file:// URLs
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .AllowCredentials();
+            });
+        });
     }
 
     private static void ConfigureServices(WebApplicationBuilder builder)

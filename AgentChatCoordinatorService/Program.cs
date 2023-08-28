@@ -1,4 +1,5 @@
 using AgentChatCoordinatorService.Configuration;
+using AgentChatCoordinatorService.Services.Agents;
 using AgentChatCoordinatorService.Services.Chat;
 using AgentChatCoordinatorService.Services.Messaging;
 using AgentChatCoordinatorService.Services.Teams;
@@ -26,6 +27,15 @@ if (rabbitMQConfig == null)
 rabbitMQConfig.Validate();
 builder.Services.AddSingleton(rabbitMQConfig);
 
+//Get & validate Agent config
+var agentConfig = builder.Configuration.GetSection("Agent").Get<AgentConfig>();
+if (agentConfig == null)
+{
+    throw new InvalidOperationException("Unable to construct Agent config model");
+}
+agentConfig.Validate();
+builder.Services.AddSingleton(agentConfig);
+
 // Create & register RabbitMQ connection object
 var factory = new ConnectionFactory
 {
@@ -39,6 +49,7 @@ builder.Services.AddHostedService<ChatSessionConsumer>();
 
 // Rest of the services
 builder.Services.AddSingleton<ITeamService, TeamService>();
+builder.Services.AddSingleton<IAgentGenerator, AgentGenerator>();
 builder.Services.AddSingleton<IChatAssignmentService, ChatAssignmentService>();
 builder.Services.AddSingleton<IChatSessionPublisher, ChatSessionPublisher>();
 builder.Services.AddSingleton<IAgentPublisher, AgentPublisher>();

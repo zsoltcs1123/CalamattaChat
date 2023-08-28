@@ -1,13 +1,19 @@
-﻿using AgentChatCoordinatorService.Extensions;
+﻿namespace AgentChatCoordinatorService.Models;
 
-namespace AgentChatCoordinatorService.Models;
-
-public record Agent(string Name, AgentSeniority Seniority)
+public class Agent
 {
-    private const double MaxConcurrency = 10;
-
-    public Guid Id { get; } = Guid.NewGuid();
+    public Guid Id { get; }
+    public string Name { get; }
+    public AgentSeniority Seniority { get; }
+    public int Capacity { get; }
     public int CurrentChats { get; set; }
-    public int Capacity => (int)Math.Floor(MaxConcurrency * Seniority.GetMultiplier());
     public bool CanTakeChat => CurrentChats < Capacity;
+
+    public Agent(Guid id, string name, AgentSeniority seniority, int capacity)
+    {
+        Id = id;
+        Name = name;
+        Seniority = seniority;
+        Capacity = capacity;
+    }
 }

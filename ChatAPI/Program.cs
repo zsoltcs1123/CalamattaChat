@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using ChatAPI.Configuration;
+using ChatAPI.Services.Chat;
 using ChatAPI.Services.Messages;
 using Messaging.Services.Chat;
 using RabbitMQ.Client;
@@ -10,6 +11,7 @@ namespace ChatAPI;
 public class Program
 {
     private const string RabbitMQConfigKey = "RabbitMQConfig";
+    private const string ChatSessionHubRoute = "api/chatHub";
 
     public static void Main(string[] args)
     {
@@ -121,5 +123,10 @@ public class Program
         app.UseRouting();
         app.UseAuthorization();
         app.MapControllers();
+        
+        app.UseEndpoints(endpoints =>
+        {
+            endpoints.MapHub<ChatSessionHub>(ChatSessionHubRoute);
+        });
     }
 }

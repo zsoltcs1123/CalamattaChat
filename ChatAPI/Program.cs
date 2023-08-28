@@ -1,8 +1,12 @@
 using System.Text.Json.Serialization;
+using ChatAPI.Configuration;
+using RabbitMQ.Client;
 using Serilog;
 
 public class Program
 {
+    private const string RabbitMQConfigKey = "RabbitMQConfig";
+
     public static void Main(string[] args)
     {
         ConfigureLogging();
@@ -10,6 +14,7 @@ public class Program
         var builder = WebApplication.CreateBuilder(args);
 
         ConfigureServices(builder);
+        ConfigureRabbitMQ(builder);
 
         var app = builder.Build();
 
@@ -24,6 +29,28 @@ public class Program
             .Filter.ByExcluding(c => c.Properties.Any(p => p.Value.ToString().Contains("/api/chat/poll")))
             .WriteTo.Console()
             .CreateLogger();
+    }
+    
+    private static void ConfigureRabbitMQ(WebApplicationBuilder builder)
+    {
+        // Get & validate RabbitMQ config
+        var rabbitMQConfig = builder.Configuration.GetSection(RabbitMQConfigKey).Get<RabbitMQConfig>();
+
+        if (rabbitMQConfig == null)
+        {
+            throw new InvalidOperationException("Unable to construct RabbitMQ config model");
+        }
+
+        rabbitMQConfig.Validate();
+        builder.Services.AddSingleton(rabbitMQConfig);
+
+        // Create & register RabbitMQ connection object
+        var factory = new ConnectionFactory
+        {
+            HostName = rabbitMQConfig.Hostname,
+        };
+        var connection = factory.CreateConnection();
+        builder.Services.AddSingleton(connection);
     }
 
     private static void ConfigureServices(WebApplicationBuilder builder)

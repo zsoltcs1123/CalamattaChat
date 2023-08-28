@@ -1,4 +1,5 @@
 using AgentChatCoordinatorService.Configuration;
+using AgentChatCoordinatorService.Services.Messaging;
 using RabbitMQ.Client;
 using Serilog;
 
@@ -30,6 +31,9 @@ var factory = new ConnectionFactory
 };
 var connection = factory.CreateConnection();
 builder.Services.AddSingleton(connection);
+
+//Hosted services
+builder.Services.AddHostedService<ChatSessionConsumer>();
 
 var app = builder.Build();
 

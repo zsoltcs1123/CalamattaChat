@@ -82,9 +82,7 @@ public class ChatSessionConsumer : IHostedService, IDisposable
         {
             _chatSessionPublisher.Publish(new ChatSessionMessage(chatSession), _rabbitMQConfig.ChatFeedbackQueueName);
             _agentPublisher.Publish(new AgentAssignedMessage(chatSession, agent));
-
-        }   
-        
+        }
     }
 
     private bool IsAssigned(ChatSession chatSession, out Agent? agent)

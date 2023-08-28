@@ -16,6 +16,7 @@ public class Program
         ConfigureServices(builder);
         ConfigureRabbitMQ(builder);
         ConfigureCors(builder);
+        ConfigureSignalR(builder);
 
         var app = builder.Build();
 
@@ -67,6 +68,15 @@ public class Program
                     .AllowCredentials();
             });
         });
+    }
+    
+    private static void ConfigureSignalR(WebApplicationBuilder builder)
+    {
+        builder.Services.AddSignalR()
+            .AddJsonProtocol(options =>
+            {
+                options.PayloadSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+            });
     }
 
     private static void ConfigureServices(WebApplicationBuilder builder)

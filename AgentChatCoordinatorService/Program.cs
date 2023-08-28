@@ -1,10 +1,10 @@
 using AgentChatCoordinatorService.Configuration;
 using AgentChatCoordinatorService.Services.Messaging;
+using AgentChatCoordinatorService.Services.Teams;
 using RabbitMQ.Client;
 using Serilog;
 
 const string rabbitMQConfigKey = "RabbitMQConfig";
-
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
@@ -34,6 +34,9 @@ builder.Services.AddSingleton(connection);
 
 //Hosted services
 builder.Services.AddHostedService<ChatSessionConsumer>();
+
+// Rest of the services
+builder.Services.AddSingleton<ITeamService, TeamService>();
 
 var app = builder.Build();
 

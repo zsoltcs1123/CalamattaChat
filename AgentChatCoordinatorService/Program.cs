@@ -40,6 +40,8 @@ builder.Services.AddHostedService<ChatSessionConsumer>();
 builder.Services.AddSingleton<ITeamService, TeamService>();
 builder.Services.AddSingleton<IChatAssignmentService, ChatAssignmentService>();
 
+// Logging
+builder.Services.AddLogging();
 
 var app = builder.Build();
 

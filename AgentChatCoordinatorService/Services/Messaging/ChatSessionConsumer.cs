@@ -18,18 +18,21 @@ public class ChatSessionConsumer : IHostedService, IDisposable
     private readonly RabbitMQConsumer _rabbitMQConsumer;
     private readonly IChatAssignmentService _chatAssignmentService;
     private readonly IChatSessionPublisher _chatSessionPublisher;
+    private readonly IAgentPublisher _agentPublisher;
 
     public ChatSessionConsumer(
         ILogger<ChatSessionConsumer> logger,
         IConnection rabbitMQConnection,
         RabbitMQConfig rabbitMQConfig,
         IChatAssignmentService chatAssignmentService,
-        IChatSessionPublisher chatSessionPublisher)
+        IChatSessionPublisher chatSessionPublisher,
+        IAgentPublisher agentPublisher)
     {
         _logger = logger;
         _rabbitMQConfig = rabbitMQConfig;
         _chatAssignmentService = chatAssignmentService;
         _chatSessionPublisher = chatSessionPublisher;
+        _agentPublisher = agentPublisher;
 
         _rabbitMQConsumer = new RabbitMQConsumer(rabbitMQConnection, _rabbitMQConfig.ChatSessionQueueName);
     }
@@ -78,7 +81,8 @@ public class ChatSessionConsumer : IHostedService, IDisposable
         else
         {
             _chatSessionPublisher.Publish(new ChatSessionMessage(chatSession), _rabbitMQConfig.ChatFeedbackQueueName);
-            //Todo: push to agent queue
+            _agentPublisher.Publish(new AgentAssignedMessage(chatSession, agent));
+
         }   
         
     }

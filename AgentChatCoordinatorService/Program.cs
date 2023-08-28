@@ -2,6 +2,7 @@ using AgentChatCoordinatorService.Configuration;
 using AgentChatCoordinatorService.Services.Chat;
 using AgentChatCoordinatorService.Services.Messaging;
 using AgentChatCoordinatorService.Services.Teams;
+using Messaging.Services.Chat;
 using RabbitMQ.Client;
 using Serilog;
 
@@ -39,6 +40,8 @@ builder.Services.AddHostedService<ChatSessionConsumer>();
 // Rest of the services
 builder.Services.AddSingleton<ITeamService, TeamService>();
 builder.Services.AddSingleton<IChatAssignmentService, ChatAssignmentService>();
+builder.Services.AddSingleton<IChatSessionPublisher, ChatSessionPublisher>();
+builder.Services.AddSingleton<IAgentPublisher, AgentPublisher>();
 
 // Logging
 builder.Services.AddLogging();

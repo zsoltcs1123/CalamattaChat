@@ -1,5 +1,4 @@
 ﻿using AgentChatCoordinatorService.Models;
-using SharedModels;
 using SharedModels.Entities;
 
 namespace AgentChatCoordinatorService.Services.Messaging;

@@ -1,4 +1,5 @@
 ﻿using ChatAPI.Configuration;
+using ChatAPI.Services.Monitor;
 using Messaging.Models;
 using Messaging.Services.Chat;
 using Microsoft.AspNetCore.Mvc;
@@ -13,15 +14,18 @@ public class ChatController : ControllerBase
     private readonly ILogger<ChatController> _logger;
     private readonly IChatSessionPublisher _chatSessionPublisher;
     private readonly RabbitMQConfig _rabbitMQConfig;
+    private readonly IPollRequestMonitor _pollRequestMonitor;
 
     public ChatController(
         ILogger<ChatController> logger,
         IChatSessionPublisher chatSessionPublisher,
-        RabbitMQConfig rabbitMQConfig)
+        RabbitMQConfig rabbitMQConfig,
+        IPollRequestMonitor pollRequestMonitor)
     {
         _logger = logger;
         _chatSessionPublisher = chatSessionPublisher;
         _rabbitMQConfig = rabbitMQConfig;
+        _pollRequestMonitor = pollRequestMonitor;
 
     }
 
@@ -32,8 +36,22 @@ public class ChatController : ControllerBase
 
         _logger.LogInformation("ChatSession {@ChatSession} initiated ", chatSession);
 
+        _pollRequestMonitor.RegisterChatSession(chatSession);
+        
         _chatSessionPublisher.Publish(new ChatSessionMessage(chatSession), _rabbitMQConfig.ChatSessionQueueName);
 
+        return Ok();
+    }
+
+    [HttpPost("poll")]
+    public IActionResult Poll([FromBody] ChatSession chatSession)
+    {
+        if (chatSession.Id == Guid.Empty)
+        {
+            return BadRequest("Invalid chat session provided.");
+        }
+
+        _pollRequestMonitor.ResetMissedPolls(chatSession);
         return Ok();
     }
 }

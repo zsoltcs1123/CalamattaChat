@@ -2,6 +2,7 @@ using System.Text.Json.Serialization;
 using ChatAPI.Configuration;
 using ChatAPI.Services.Chat;
 using ChatAPI.Services.Messages;
+using ChatAPI.Services.Monitor;
 using Messaging.Services.Chat;
 using RabbitMQ.Client;
 using Serilog;
@@ -102,12 +103,13 @@ public class Program
         builder.Services.AddSwaggerGen();
         
         // Hosted services
+        builder.Services.AddHostedService<PollRequestMonitoringService>();
         builder.Services.AddHostedService<ChatSessionFeedbackConsumer>();
 
         // Rest of the services
+        builder.Services.AddSingleton<IPollRequestMonitor, PollRequestMonitor>();
         builder.Services.AddSingleton<IChatSessionPublisher, ChatSessionPublisher>();
     }
-
 
     private static void ConfigureMiddleware(WebApplication app)
     {

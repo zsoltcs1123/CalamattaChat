@@ -1,6 +1,5 @@
 ﻿using AgentChatCoordinatorService.Models;
 using AgentChatCoordinatorService.Services.Teams;
-using SharedModels;
 using SharedModels.Entities;
 using SharedModels.Enums;
 

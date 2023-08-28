@@ -1,21 +1,13 @@
 ﻿namespace AgentChatCoordinatorService.Models;
 
-public record Team(string Name, TimeSpan? ShiftStart, List<Agent> Agents)
+public record Team(
+    string Name, 
+    TimeSpan? ShiftStart, 
+    int Capacity, 
+    int MaximumQueueSize, 
+    bool IsOverflowTeam,
+    List<Agent> Agents)
 {
-    private const double CapacityMultiplier = 1.5;
-
-    public int Capacity
-    {
-        get
-        {
-            return Agents.Sum(agent => agent.Capacity);
-        }
-    }
-
-    public int MaximumQueueSize => (int)Math.Floor(Capacity * CapacityMultiplier);
-
-    public bool IsOverflowTeam => ShiftStart == null;
-
     public bool IsTeamOnShift
     {
         get

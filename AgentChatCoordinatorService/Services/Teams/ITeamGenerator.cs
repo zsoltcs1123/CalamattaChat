@@ -2,8 +2,7 @@
 
 namespace AgentChatCoordinatorService.Services.Teams;
 
-public interface ITeamService
+public interface ITeamGenerator
 {
-    Team? GetActiveTeam();
-    Team? GetOverflowTeam();
+    IEnumerable<Team> GenerateTeams();
 }

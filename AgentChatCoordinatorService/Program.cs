@@ -36,6 +36,18 @@ if (agentConfig == null)
 agentConfig.Validate();
 builder.Services.AddSingleton(agentConfig);
 
+//Get & validate Teams config
+var teams = builder.Configuration.GetSection("Teams").Get<List<TeamConfig>>();
+
+if (teams == null)
+{
+    throw new InvalidOperationException("Unable to construct Teams config model");
+}
+var teamsConfig = new TeamsConfig(teams);
+teamsConfig.Validate();
+builder.Services.AddSingleton(teamsConfig);
+
+
 // Create & register RabbitMQ connection object
 var factory = new ConnectionFactory
 {
@@ -49,6 +61,7 @@ builder.Services.AddHostedService<ChatSessionConsumer>();
 
 // Rest of the services
 builder.Services.AddSingleton<ITeamService, TeamService>();
+builder.Services.AddSingleton<ITeamGenerator, TeamGenerator>();
 builder.Services.AddSingleton<IAgentGenerator, AgentGenerator>();
 builder.Services.AddSingleton<IChatAssignmentService, ChatAssignmentService>();
 builder.Services.AddSingleton<IChatSessionPublisher, ChatSessionPublisher>();

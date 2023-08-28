@@ -1,4 +1,5 @@
 using AgentChatCoordinatorService.Configuration;
+using AgentChatCoordinatorService.Services.Chat;
 using AgentChatCoordinatorService.Services.Messaging;
 using AgentChatCoordinatorService.Services.Teams;
 using RabbitMQ.Client;
@@ -37,6 +38,8 @@ builder.Services.AddHostedService<ChatSessionConsumer>();
 
 // Rest of the services
 builder.Services.AddSingleton<ITeamService, TeamService>();
+builder.Services.AddSingleton<IChatAssignmentService, ChatAssignmentService>();
+
 
 var app = builder.Build();
 

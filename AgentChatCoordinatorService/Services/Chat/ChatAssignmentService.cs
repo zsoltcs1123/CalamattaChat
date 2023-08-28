@@ -35,7 +35,7 @@ namespace AgentChatCoordinatorService.Services.Chat
                 return true;
             }
 
-            if (_chatSessionQueue.Count <= activeTeam.MaximumQueueSize)
+            if (_chatSessionQueue.Count < activeTeam.MaximumQueueSize)
             {
                 chatSession.Status = ChatSessionStatus.Queued;
                 _chatSessionQueue.Enqueue(chatSession);

@@ -44,17 +44,28 @@ public class ChatAssignmentServiceTests
     [Test]
     public void TryAssignChatToAgent_ActiveTeamNoAvailableAgent_ReturnsFalseIfQueueFull()
     {
-        var agent = new Agent(Guid.NewGuid(), string.Empty, AgentSeniority.Senior, 0);
-        var team = new Team("", DateTime.Now.TimeOfDay, new List<Agent> { agent });
+        var agent = new Agent(Guid.NewGuid(), string.Empty, AgentSeniority.Senior, 1);
+
+        var team = new Team(
+            "",
+            DateTime.Now.TimeOfDay,
+            1,
+            1,
+            false,
+            new List<Agent> { agent });
 
         _mockTeamService.Setup(ts => ts.GetActiveTeam()).Returns(team);
 
-        var result = _service.TryAssignChatToAgent(CreateChatSession(), out var assignedAgent);
+        _service.TryAssignChatToAgent(CreateChatSession(), out var assignedAgent1);
+        _service.TryAssignChatToAgent(CreateChatSession(), out var assignedAgent2);
         
+        var result = _service.TryAssignChatToAgent(CreateChatSession(), out var assignedAgent3);
+
+
         Assert.Multiple(() =>
         {
             Assert.That(result, Is.False);
-            Assert.That(assignedAgent, Is.Null);
+            Assert.That(assignedAgent3, Is.Null);
         });
     }
 
@@ -63,76 +74,126 @@ public class ChatAssignmentServiceTests
     {
         var juniorAgent = new Agent(Guid.NewGuid(), string.Empty, AgentSeniority.Junior, 10);
         var seniorAgent = new Agent(Guid.NewGuid(), string.Empty, AgentSeniority.Senior, 10);
-        
-        var team = new Team("", DateTime.Now.TimeOfDay, new List<Agent> { juniorAgent, seniorAgent});
+
+        var team = new Team(
+            "",
+            DateTime.Now.TimeOfDay,
+            10,
+            10,
+            false,
+            new List<Agent> { juniorAgent, seniorAgent });
+
         _mockTeamService.Setup(ts => ts.GetActiveTeam()).Returns(team);
 
         var result = _service.TryAssignChatToAgent(CreateChatSession(), out var agent);
 
-        Assert.That(result, Is.True);
-        Assert.That(agent, Is.EqualTo(juniorAgent));
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Is.True);
+            Assert.That(agent, Is.EqualTo(juniorAgent));
+        });
     }
 
     [Test]
     public void TryAssignChatToAgent_QueueFullNoOverflowTeam_ReturnsFalse()
     {
-        var team = new Team
-        {
-            Agents = new List<Agent> { new Agent { CanTakeChat = false } },
-            MaximumQueueSize = 0
-        };
+        var agent = new Agent(Guid.NewGuid(), string.Empty, AgentSeniority.Senior, 1);
+
+        var team = new Team(
+            "",
+            DateTime.Now.TimeOfDay,
+            1,
+            0,
+            false,
+            new List<Agent> { agent });
+
         _mockTeamService.Setup(ts => ts.GetActiveTeam()).Returns(team);
         _mockTeamService.Setup(ts => ts.GetOverflowTeam()).Returns((Team)null);
 
-        var result = _service.TryAssignChatToAgent(new ChatSession(), out var agent);
+        _service.TryAssignChatToAgent(CreateChatSession(), out var assignedAgent1);
 
-        Assert.IsFalse(result);
-        Assert.IsNull(agent);
+        var result = _service.TryAssignChatToAgent(CreateChatSession(), out var assignedAgent3);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Is.False);
+            Assert.That(assignedAgent3, Is.Null);
+        });
     }
 
     [Test]
     public void TryAssignChatToAgent_OverflowTeamNoAvailableAgent_ReturnsFalse()
     {
-        var activeTeam = new Team
-        {
-            Agents = new List<Agent> { new Agent { CanTakeChat = false } },
-            MaximumQueueSize = 0
-        };
-        var overflowTeam = new Team
-        {
-            Agents = new List<Agent> { new Agent { CanTakeChat = false } }
-        };
+        var agent1 = new Agent(Guid.NewGuid(), string.Empty, AgentSeniority.Senior, 1);
+        var agent2 = new Agent(Guid.NewGuid(), string.Empty, AgentSeniority.Senior, 1);
+
+        var activeTeam = new Team(
+            "",
+            DateTime.Now.TimeOfDay,
+            1,
+            0,
+            false,
+            new List<Agent> { agent1 });
+
+
+        var overflowTeam = new Team(
+            "",
+            DateTime.Now.TimeOfDay,
+            1,
+            0,
+            true,
+            new List<Agent> { agent2 });
+
         _mockTeamService.Setup(ts => ts.GetActiveTeam()).Returns(activeTeam);
         _mockTeamService.Setup(ts => ts.GetOverflowTeam()).Returns(overflowTeam);
 
-        var result = _service.TryAssignChatToAgent(new ChatSession(), out var agent);
+        _service.TryAssignChatToAgent(CreateChatSession(), out var assignedAgent1);
+        _service.TryAssignChatToAgent(CreateChatSession(), out var assignedAgent2);
 
-        Assert.IsFalse(result);
-        Assert.IsNull(agent);
+        var result = _service.TryAssignChatToAgent(CreateChatSession(), out var assignedAgent3);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Is.False);
+            Assert.That(assignedAgent3, Is.Null);
+        });
     }
 
     [Test]
     public void TryAssignChatToAgent_OverflowTeamAvailableAgent_AssignsToAgentWithLowestSeniority()
     {
-        var activeTeam = new Team
-        {
-            Agents = new List<Agent> { new Agent { CanTakeChat = false } },
-            MaximumQueueSize = 0
-        };
-        var overflowTeam = new Team
-        {
-            Agents = new List<Agent>
-            {
-                new Agent { CanTakeChat = true, Seniority = 2 },
-                new Agent { CanTakeChat = true, Seniority = 1 }
-            }
-        };
+        var agent1 = new Agent(Guid.NewGuid(), string.Empty, AgentSeniority.Senior, 1);
+        var agent2 = new Agent(Guid.NewGuid(), string.Empty, AgentSeniority.Senior, 2);
+
+        var activeTeam = new Team(
+            "",
+            DateTime.Now.TimeOfDay,
+            1,
+            0,
+            false,
+            new List<Agent> { agent1 });
+
+
+        var overflowTeam = new Team(
+            "",
+            DateTime.Now.TimeOfDay,
+            1,
+            0,
+            true,
+            new List<Agent> { agent2 });
+
         _mockTeamService.Setup(ts => ts.GetActiveTeam()).Returns(activeTeam);
         _mockTeamService.Setup(ts => ts.GetOverflowTeam()).Returns(overflowTeam);
 
-        var result = _service.TryAssignChatToAgent(new ChatSession(), out var agent);
+        _service.TryAssignChatToAgent(CreateChatSession(), out var assignedAgent1);
+        _service.TryAssignChatToAgent(CreateChatSession(), out var assignedAgent2);
 
-        Assert.IsTrue(result);
-        Assert.AreEqual(1, agent.Seniority);
+        var result = _service.TryAssignChatToAgent(CreateChatSession(), out var assignedAgent3);
+       
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Is.True);
+            Assert.That(assignedAgent3, Is.EqualTo(agent2));
+        });
     }
 }

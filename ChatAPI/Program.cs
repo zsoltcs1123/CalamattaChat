@@ -56,6 +56,7 @@ public class Program
         // Create & register RabbitMQ connection object
         var factory = new ConnectionFactory
         {
+            //Using the default port and a guest account
             HostName = rabbitMQConfig.Hostname,
         };
         var connection = factory.CreateConnection();

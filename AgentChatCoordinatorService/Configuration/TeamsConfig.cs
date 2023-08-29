@@ -1,6 +1,6 @@
 ﻿namespace AgentChatCoordinatorService.Configuration;
 
-public class TeamsConfig
+public class TeamsConfig : IConfig
 {
     public List<TeamConfig> Teams { get; }
 
@@ -9,8 +9,11 @@ public class TeamsConfig
         Teams = teams;
     }
 
-    public bool Validate()
+    public void Validate()
     {
-        return Teams.Count > 0;
+        if (Teams.Count == 0)
+        {
+            throw new InvalidOperationException("No teams configured");
+        }
     }
 }

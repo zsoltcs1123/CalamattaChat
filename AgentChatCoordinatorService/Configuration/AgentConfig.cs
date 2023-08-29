@@ -1,11 +1,14 @@
 ﻿namespace AgentChatCoordinatorService.Configuration;
 
-public class AgentConfig
+public class AgentConfig : IConfig
 {
     public int MaximumConcurrentChats { get; set; }
 
-    public bool Validate()
+    public void Validate()
     {
-        return MaximumConcurrentChats > 0;
+        if (MaximumConcurrentChats <= 0)
+        {
+            throw new InvalidOperationException("Maximum concurrent chats must be greater than 0");
+        }
     }
 }

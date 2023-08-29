@@ -1,6 +1,6 @@
 ﻿namespace AgentChatCoordinatorService.Configuration;
 
-public class RabbitMQConfig
+public class RabbitMQConfig : IConfig
 {
     public string Hostname { get; set; }
     public string ChatSessionQueueName { get; set; }

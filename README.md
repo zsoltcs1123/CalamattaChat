@@ -6,6 +6,7 @@ Technologies used:
 - RabbitMQ
 - Serilog
 - SignalR
+- Docker
 
 To test the application, there two HTML files served by the ChatAPI: chatWindow.html and chatSessionTester.html.
 <br/><br/>

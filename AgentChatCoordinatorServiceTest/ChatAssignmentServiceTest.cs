@@ -1,6 +1,8 @@
+using AgentChatCoordinatorService.Configuration;
 using AgentChatCoordinatorService.Models;
 using AgentChatCoordinatorService.Services.Chat;
 using AgentChatCoordinatorService.Services.Teams;
+using AgentChatCoordinatorService.Services.Time;
 using Microsoft.Extensions.Logging;
 using Moq;
 using SharedModels.Entities;
@@ -13,13 +15,21 @@ public class ChatAssignmentServiceTests
     private Mock<ITeamService> _mockTeamService;
     private Mock<ILogger<ChatAssignmentService>> _mockLogger;
     private ChatAssignmentService _service;
+    private OfficeHoursConfig officeHoursConfig;
 
     [SetUp]
     public void SetUp()
     {
         _mockTeamService = new Mock<ITeamService>();
         _mockLogger = new Mock<ILogger<ChatAssignmentService>>();
-        _service = new ChatAssignmentService(_mockLogger.Object, _mockTeamService.Object);
+        officeHoursConfig = new OfficeHoursConfig
+        {
+            Start = new TimeSpan(9, 0, 0), 
+            End = new TimeSpan(17, 0, 0)
+        };
+        var timeServiceMock = new Mock<ITimeService>();
+        timeServiceMock.Setup(ts => ts.GetCurrentTimeOfDay()).Returns(new TimeSpan(12, 0, 0));
+        _service = new ChatAssignmentService(_mockLogger.Object, _mockTeamService.Object, officeHoursConfig, timeServiceMock.Object);
     }
 
     private ChatSession CreateChatSession()

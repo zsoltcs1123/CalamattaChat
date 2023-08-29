@@ -1,6 +1,7 @@
 ﻿using AgentChatCoordinatorService.Configuration;
 using AgentChatCoordinatorService.Models;
 using AgentChatCoordinatorService.Services.Teams;
+using AgentChatCoordinatorService.Services.Time;
 using SharedModels.Entities;
 using SharedModels.Enums;
 
@@ -11,17 +12,20 @@ namespace AgentChatCoordinatorService.Services.Chat
         private readonly ILogger<ChatAssignmentService> _logger;
         private readonly ITeamService _teamService;
         private readonly OfficeHoursConfig _officeHoursConfig;
+        private readonly ITimeService _timeService;
 
         private readonly Queue<ChatSession> _chatSessionQueue = new();
 
         public ChatAssignmentService(
             ILogger<ChatAssignmentService> logger,
             ITeamService teamService,
-            OfficeHoursConfig officeHoursConfig)
+            OfficeHoursConfig officeHoursConfig,
+            ITimeService timeService)
         {
             _logger = logger;
             _teamService = teamService;
             _officeHoursConfig = officeHoursConfig;
+            _timeService = timeService;
         }
 
         public bool TryAssignChatToAgent(ChatSession chatSession, out Agent? agent)
@@ -80,7 +84,7 @@ namespace AgentChatCoordinatorService.Services.Chat
                 return false;
             }
 
-            if (!_officeHoursConfig.IsOfficeHours())
+            if (!_officeHoursConfig.IsOfficeHours(_timeService.GetCurrentTimeOfDay()))
             {
                 _logger.LogError("Outside of office hours - no overflow team available");
                 agent = null;

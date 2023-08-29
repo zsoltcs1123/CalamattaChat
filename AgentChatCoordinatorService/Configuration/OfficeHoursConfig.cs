@@ -13,9 +13,8 @@ public class OfficeHoursConfig : IConfig
         }
     }
     
-    public bool IsOfficeHours()
+    public bool IsOfficeHours(TimeSpan currentTime)
     {
-        var currentTime = DateTime.Now.TimeOfDay;
         return currentTime >= Start && currentTime <= End;
     }
 

@@ -3,6 +3,7 @@ using AgentChatCoordinatorService.Services.Agents;
 using AgentChatCoordinatorService.Services.Chat;
 using AgentChatCoordinatorService.Services.Messaging;
 using AgentChatCoordinatorService.Services.Teams;
+using AgentChatCoordinatorService.Services.Time;
 using Messaging.Services.Chat;
 using RabbitMQ.Client;
 using Serilog;
@@ -98,6 +99,7 @@ namespace AgentChatCoordinatorService // Replace with appropriate namespace
             builder.Services.AddSingleton<IChatAssignmentService, ChatAssignmentService>();
             builder.Services.AddSingleton<IChatSessionPublisher, ChatSessionPublisher>();
             builder.Services.AddSingleton<IAgentPublisher, AgentPublisher>();
+            builder.Services.AddSingleton<ITimeService, TimeService>();
 
             // Logging
             builder.Services.AddLogging();

@@ -5,3 +5,4 @@ Technologies used:
 - ASP.NET Core
 - RabbitMQ
 - Serilog
+- SignalR

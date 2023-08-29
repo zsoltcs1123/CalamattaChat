@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Polling Tester</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/3.1.9/signalr.min.js"></script>
+    <script>
+
+        let hasPollingStarted = false;
+        let connection = new signalR.HubConnectionBuilder()
+            .withUrl("/api/chatHub")
+            .build();
+
+        connection.on("ReceiveChatSession", (session) => {
+            console.log(`ChatSession ID: ${session.id}`);
+            console.log(`Initiated At: ${session.initiatedAt}`);
+            console.log(`Status: ${session.status}`);
+
+            setChatSession(session);
+
+            // Start polling if it hasn't started yet
+            if (!hasPollingStarted && session.status != "Refused") {
+                startPolling();
+                hasPollingStarted = true; // Set the flag to true
+            }
+        });
+
+        connection.start().catch(function (err) {
+            return console.error(err.toString());
+        });
+
+        let chatSession = null;
+        let pollingInterval = null;
+        let pollingCount = 0;
+
+        let initiateUrl = 'api/chat/initiate';
+
+        async function startChat() {
+            try {
+                console.log("Starting chat", initiateUrl);
+                document.getElementById('sessionStatus').innerText = `Session Status: Initiating...`;
+
+                const response = await fetch(initiateUrl, {
+                    method: 'POST'
+                });
+
+                if (response.ok) {
+                    console.log("Received OK")
+                } else {
+                    console.error("Failed to start chat session");
+                }
+            } catch (error) {
+                console.error("Error starting chat:", error);
+            }
+        }
+
+        function setChatSession(session) {
+            chatSession = session;
+            document.getElementById('sessionId').innerText = `Session ID: ${chatSession.id}`;
+            document.getElementById('sessionStatus').innerText = `Session Status: ${chatSession.status}`;
+        }
+
+        async function startPolling() {
+            if (pollingInterval) {
+                clearInterval(pollingInterval);
+            }
+
+            document.getElementById('pollingStatus').innerText = "Polling started!";
+            pollingCount = 0;
+
+            pollingInterval = setInterval(async () => {
+                pollingCount++;
+                document.getElementById('pollingAttempts').innerText = `Polling attempts: ${pollingCount}`;
+
+                try {
+                    let pollUrl = `/api/chat/poll`;
+
+                    console.log("Polling...", pollUrl);
+                    const response = await fetch(pollUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(chatSession)
+                    });
+
+                    const status = await response.text();
+                } catch (error) {
+                    console.error("Error polling:", error);
+                }
+            }, 1000);
+        }
+
+        function stopPolling() {
+            if (pollingInterval) {
+                clearInterval(pollingInterval);
+                document.getElementById('pollingStatus').innerText = "Polling stopped!";
+            }
+        }
+    </script>
+</head>
+
+<body>
+    <h1>ChatWindow</h1>
+    <button onclick="startChat()">Start Chat Session</button>
+    <button onclick="stopPolling()">Stop Polling</button>
+    <p id="sessionId"></p>
+    <p id="sessionStatus"></p>
+    <p id="pollingStatus"></p>
+    <p id="pollingAttempts"></p>
+</body>
+
+</html>

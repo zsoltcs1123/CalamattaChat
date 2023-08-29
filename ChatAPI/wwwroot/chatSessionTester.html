@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Session Tester</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/3.1.9/signalr.min.js"></script>
+</head>
+
+<body>
+
+    <h2>Chat Session Tester</h2>
+
+    <label for="sessionCount">Number of chat sessions to initiate:</label>
+    <input type="number" id="sessionCount" name="sessionCount" min="1" value="1">
+    <button onclick="initiateSessions()">Initiate</button>
+
+    <ol id="sessionList"></ol>
+
+    <script>
+        const apiBaseUrl = '/api/chat';
+        const hubConnection = new signalR.HubConnectionBuilder()
+            .withUrl("/api/chatHub")
+            .build();
+
+        hubConnection.on("ReceiveChatSession", function (chatSession) {
+            const sessionElement = document.getElementById(chatSession.id);
+            if (!sessionElement) {
+                const li = document.createElement('li');
+                li.id = chatSession.id;
+                li.innerText = `Session ${chatSession.id} - ${chatSession.status}`;
+                document.getElementById('sessionList').appendChild(li);
+                console.log(`Initiated session with ID ${chatSession.id}`);
+            } else {
+                sessionElement.innerText = `Session ${chatSession.id} - ${chatSession.status}`;
+            }
+
+            console.log(`Received update for session ${chatSession.id} with status: ${chatSession.status}`);
+        });
+
+        hubConnection.start()
+            .then(() => console.log('Hub connection started successfully'))
+            .catch(err => {
+                console.error('Error starting hub connection:', err.toString());
+            });
+
+        async function initiateSession() {
+            try {
+                const response = await fetch(`${apiBaseUrl}/initiate`, { method: 'POST' });
+                if (response.ok) {
+                    console.log("Session initiation request sent");
+                } else {
+                    console.error("Failed to initiate chat session");
+                }
+            } catch (error) {
+                console.error("Error initiating session:", error);
+            }
+        }
+
+        function initiateSessions() {
+            const count = parseInt(document.getElementById('sessionCount').value) || 0;
+            console.log(`Requesting initiation of ${count} chat sessions...`);
+            for (let i = 0; i < count; i++) {
+                initiateSession();
+            }
+        }
+    </script>
+
+</body>
+
+</html>

@@ -3,11 +3,20 @@
 public class RabbitMQConfig
 {
     public string Hostname { get; set; }
+    public int Port { get; set; }
+    public string Username { get; set; }
+    public string Password { get; set; }
     public string ChatSessionQueueName { get; set; }
     public string ChatFeedbackQueueName { get; set; }
 
     public void Validate()
     {
+        if (string.IsNullOrWhiteSpace(Username))
+            throw new InvalidOperationException("Username is required.");
+
+        if (string.IsNullOrWhiteSpace(Password))
+            throw new InvalidOperationException("Password is required.");
+        
         if (string.IsNullOrWhiteSpace(Hostname))
             throw new InvalidOperationException("Hostname is required.");
 

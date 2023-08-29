@@ -85,7 +85,11 @@ namespace AgentChatCoordinatorService // Replace with appropriate namespace
             var factory = new ConnectionFactory
             {
                 HostName = rabbitMQConfig.Hostname,
+                Port = rabbitMQConfig.Port,
+                UserName = rabbitMQConfig.Username,
+                Password = rabbitMQConfig.Password
             };
+            
             var connection = factory.CreateConnection();
             builder.Services.AddSingleton(connection);
 
